@@ -3,6 +3,8 @@ package io.oisin.esportsnews;
 /**
  * Created by Oisin Quinn (@oisin1001) on 21/05/2018.
  */
+
+// This file stores data for each news story
 public class Entry {
     private String title;
     private String section;

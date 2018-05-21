@@ -21,28 +21,25 @@ import java.util.ArrayList;
  */
 public class QueryUtils {
 
-    public static final String LOG_TAG = QueryUtils.class.getSimpleName();
+    private static final String LOG_TAG = QueryUtils.class.getSimpleName();
 
     private QueryUtils() {
     }
 
     public static ArrayList<Entry> fetchEntries(String requestUrl) {
-        // Create URL object
+        // Create URL object and returns the query string
         URL url = createUrl(requestUrl);
-
         String jsonResponse = getQuery(url);
 
-        // Extract relevant fields from the JSON response and create a list of {@link Earthquake}s
-        ArrayList<Entry> entries = extractEntries(jsonResponse);
-
-        // Return the list of {@link Earthquake}s
-        return entries;
+        // Returns the relevant fields from the JSON response and create a list of entries
+        return extractEntries(jsonResponse);
     }
 
     private static ArrayList<Entry> extractEntries(String query) {
         ArrayList<Entry> entries = new ArrayList<>();
 
         try {
+            // This parses the required information from the JSON response
             JSONObject mainObject = new JSONObject(query);
             JSONObject detailsObject = mainObject.getJSONObject("response");
             JSONArray responses = detailsObject.getJSONArray("results");
@@ -57,6 +54,7 @@ public class QueryUtils {
                 JSONObject authorObject = tags.getJSONObject(0);
                 String authorName = authorObject.getString("webTitle");
 
+                // We add the contents to the arraylist
                 entries.add(new Entry(title, section, authorName, date, url));
             }
         } catch (JSONException e) {
@@ -81,7 +79,7 @@ public class QueryUtils {
         String jsonResponse = "";
         HttpURLConnection connection = null;
         InputStream inputStream = null;
-
+        // This makes the internet connection and extracts the InputStream, which is later parsed
         try {
             connection = (HttpURLConnection) url.openConnection();
             connection.setRequestMethod("GET");
@@ -94,6 +92,7 @@ public class QueryUtils {
         } catch (IOException e) {
             Log.e(LOG_TAG, "Error getting query from URL.");
         } finally {
+            // Afterwards, we need to disconnect the connection and close the input stream
             if (connection != null) {
                 connection.disconnect();
             }
@@ -109,6 +108,7 @@ public class QueryUtils {
     }
 
     private static String readFromStream(InputStream inputStream) throws IOException {
+        // This parses the InputStream using a StringBuilder and returns a string containing the jsonResponse
         StringBuilder output = new StringBuilder();
         if (inputStream != null) {
             InputStreamReader inputStreamReader = new InputStreamReader(inputStream, Charset.forName("UTF-8"));
