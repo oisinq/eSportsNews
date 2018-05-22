@@ -4,11 +4,16 @@ import android.app.LoaderManager;
 import android.content.Context;
 import android.content.Intent;
 import android.content.Loader;
+import android.content.SharedPreferences;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ListView;
@@ -22,7 +27,8 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
 
     // This is our query URL
     // It shows esports articles, sorted by new, showing the contributor tags so we can get the author
-    private static final String JSON_URL = "http://content.guardianapis.com/search?tag=sport/esports&show-tags=contributor&order-by=newest&api-key=test";
+   // private static final String JSON_URL = "https://content.guardianapis.com/search?tag=sport/esports&show-tags=contributor&order-by=newest&page-size=10&api-key=test";
+    private static final String JSON_URL = "https://content.guardianapis.com/search";
     private EntryAdapter adapter;
 
     @Override
@@ -67,7 +73,24 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
 
     @Override
     public Loader<List<Entry>> onCreateLoader(int i, Bundle bundle) {
-        return new EntryLoader(this, JSON_URL);
+        Log.v("MainActivity", "Ok ladz onCreateLoader started");
+        SharedPreferences sharedPrefs = PreferenceManager.getDefaultSharedPreferences(this);
+
+        String numArticles = sharedPrefs.getString(getString(R.string.settings_num_articles_key),
+                getString(R.string.settings_num_articles_default));
+
+        Uri baseUri = Uri.parse(JSON_URL);
+        Uri.Builder uriBuilder = baseUri.buildUpon();
+
+        uriBuilder.appendQueryParameter("tag", "sport/esports");
+        uriBuilder.appendQueryParameter("show-tags", "contributor");
+        uriBuilder.appendQueryParameter("order-by", "newest");
+        uriBuilder.appendQueryParameter("page-size", numArticles);
+        uriBuilder.appendQueryParameter("api-key", "test");
+
+        // https://content.guardianapis.com/search?tag=sport/esports&show-tags=contributor&order-by=newest&page-size=10&api-key=test
+
+        return new EntryLoader(this, uriBuilder.toString());
     }
 
     @Override
@@ -91,5 +114,22 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
     @Override
     public void onLoaderReset(Loader<List<Entry>> loader) {
         adapter.clear();
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.main, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        int id = item.getItemId();
+        if (id == R.id.action_settings) {
+            Intent settingsIntent = new Intent(this, SettingsActivity.class);
+            startActivity(settingsIntent);
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
     }
 }

@@ -1,5 +1,11 @@
 <resources>
     <string name="app_name">eSportsNews</string>
-    <string name="empty">No articles available.</string>
+    <string name="empty">No articles available, try again later.</string>
     <string name="no_connection">You have no internet connection.</string>
+    <string name="settings_menu_item">Settings</string>
+    <string name="settings_title">News Settings</string>
+
+    <string name="settings_num_articles_label">Number of articles</string>
+    <string name="settings_num_articles_key" translatable="false">num_articles</string>
+    <string name="settings_num_articles_default" translatable="false">10</string>
 </resources>
