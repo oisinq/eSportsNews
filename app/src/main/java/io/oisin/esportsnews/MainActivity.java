@@ -11,13 +11,11 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ListView;
-import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import java.util.ArrayList;
@@ -30,6 +28,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
    // private static final String JSON_URL = "https://content.guardianapis.com/search?tag=sport/esports&show-tags=contributor&order-by=newest&page-size=10&api-key=test";
     private static final String JSON_URL = "https://content.guardianapis.com/search";
     private EntryAdapter adapter;
+    private TextView emptyStateTextView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -40,7 +39,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         adapter = new EntryAdapter(this, new ArrayList<Entry>());
         entryListView.setAdapter(adapter);
 
-        TextView emptyStateTextView = findViewById(R.id.emptyview);
+        emptyStateTextView = findViewById(R.id.emptyview);
         entryListView.setEmptyView(emptyStateTextView);
 
         entryListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -73,18 +72,20 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
 
     @Override
     public Loader<List<Entry>> onCreateLoader(int i, Bundle bundle) {
-        Log.v("MainActivity", "Ok ladz onCreateLoader started");
         SharedPreferences sharedPrefs = PreferenceManager.getDefaultSharedPreferences(this);
 
         String numArticles = sharedPrefs.getString(getString(R.string.settings_num_articles_key),
                 getString(R.string.settings_num_articles_default));
+
+        String orderBy = sharedPrefs.getString(getString(R.string.settings_order_by_key),
+                getString(R.string.settings_order_by_default));
 
         Uri baseUri = Uri.parse(JSON_URL);
         Uri.Builder uriBuilder = baseUri.buildUpon();
 
         uriBuilder.appendQueryParameter("tag", "sport/esports");
         uriBuilder.appendQueryParameter("show-tags", "contributor");
-        uriBuilder.appendQueryParameter("order-by", "newest");
+        uriBuilder.appendQueryParameter("order-by", orderBy);
         uriBuilder.appendQueryParameter("page-size", numArticles);
         uriBuilder.appendQueryParameter("api-key", "test");
 
@@ -95,20 +96,14 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
 
     @Override
     public void onLoadFinished(Loader<List<Entry>> loader, List<Entry> entries) {
-        adapter.clear();
+        View loadingIndicator = findViewById(R.id.progress_bar);
+        loadingIndicator.setVisibility(View.GONE);
 
-        // If entries contains an entry, we add it to the adapter
+        emptyStateTextView.setText(R.string.empty);
+
         if (entries != null && !entries.isEmpty()) {
             adapter.addAll(entries);
-        } else {
-            // Otherwise, we show the empty view
-            TextView emptyView = findViewById(R.id.emptyview);
-            emptyView.setText(R.string.empty);
         }
-
-        // Either way, we hide the progress bar now
-        ProgressBar bar = findViewById(R.id.progress_bar);
-        bar.setVisibility(View.GONE);
     }
 
     @Override
